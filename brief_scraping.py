@@ -99,7 +99,7 @@ while(running):
         print('http error code 500, retrying in {} seconds...'.format(x*6))
         time.sleep(x*6)
 
-print('END.')
+print('THE END.')
 
  
 #              _( }        
