@@ -8,8 +8,10 @@ import urllib3
 import csv
 
 # ===============================================================================================
-                    # 25 meilleures performances de l’année 1891 à 2019 en
-                    # toutes disciplines confondues, dans un fichier Excel.
+                    # 25 meilleures performances de l’année 1891 à 2019 en athlétisme,
+                    # toutes disciplines confondues, dans un fichier Excel 
+                    # (ou plutôt des fichiers Excel... ou même plutôt une quantité 
+                    # astronomique de fichiers Excel...)
 # ===============================================================================================
 
 def get_el_by_pos(html_content, element, position):
