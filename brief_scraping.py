@@ -4,66 +4,17 @@ import os
 import sys
 import pandas as pd 
 import time
+import urllib3
+import csv
 
-
+# ===============================================================================================
+                    # 25 meilleures performances de l’année 1891 à 2019 en
+                    # toutes disciplines confondues, dans un fichier Excel.
+# ===============================================================================================
 
 def get_el_by_pos(html_content, element, position):
     soup = BeautifulSoup.BeautifulSoup(str(html_content), 'html.parser')
     return soup.find_all(element)[position]
-
-
-
-
-
-
-# ===============================================================================================
-#                             TRIPLE JUMP // 25 BEST // MEN
-# ===============================================================================================
-
-# url = 'http://trackfield.brinkster.net/25BestPerf.asp?EventCode=MF4&P=F'
-# html = requests.get(url).text
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-txt = os.path.join(dir_path, "html.txt")
-html = open(txt, "r").read()
-
-table = get_el_by_pos(html, 'table', 4) # 5e balise <table> du DOM
-rows = table.find_all('tr')[2:] # Exclusion des 2 premiers rows inutiles
-
-performances = []
-names = []
-countries = []
-cities = []
-dates = []
-
-for row in rows:
-    performances.append(get_el_by_pos(row, 'td', 1).get_text())
-    names.append(get_el_by_pos(row, 'td', 5).find('a').get_text())
-    countries.append(get_el_by_pos(row, 'td', 6).get_text())
-    cities.append(get_el_by_pos(row, 'td', 7).get_text())
-    dates.append(get_el_by_pos(row, 'td', 8).get_text())
-
-best_performances_of_triple_jump_men = pd.DataFrame({
-    'names':names,
-    'performances':performances,
-    'countries': countries,
-    'cities': cities,
-    'dates': dates
-})
-
-# print(best_performances_of_triple_jump_men)
-
-
-
-
-
-
-
-
-# ===============================================================================================
-                    # 25 meilleures performances de l’année 1891 à 2019 en
-                    # triple saut homme et femme dans un fichier Excel.
-# ===============================================================================================
 
 def get_event_codes():
     url = 'http://trackfield.brinkster.net/Main.asp?P=F'
@@ -91,7 +42,6 @@ def get_combinations_of_params():
             combinations.append([year, event_code])
     return combinations
 
-
 def get_http_params(combinations):
     params = []
     for combination in combinations:
@@ -99,46 +49,61 @@ def get_http_params(combinations):
         params.append(http_params)
     return params
 
-params = get_http_params(get_combinations_of_params())
-dir_path = os.path.dirname(os.path.realpath(__file__))
-txt = os.path.join(dir_path, "http_params.txt")
-fichier = open(txt,'w') 
-fichier.write(str(params))
-fichier.close()
+def write_params_to_file(params):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    txt = os.path.join(dir_path, "http_params.txt")
+    fichier = open(txt,'w') 
+    fichier.write(str(params))
+    fichier.close()
 
-base_url = 'http://trackfield.brinkster.net/More.asp'
+def write_table_to_csv(html, title):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    csv_file = os.path.join(dir_path, title+'.csv')
+    f = csv.writer(open(csv_file, "w", encoding="utf-8", newline=''))
+    table = get_el_by_pos(html, 'table', 0)
+    rows = table.find_all('tr')[2:]
+    for row in rows:
+        f.writerow([row.get_text().replace('\n', ';').replace(',','')])
 
-running = True
+
 i = 0
-x = 10
+x = 20 # délai entre les essais
 tries = 0
+params = get_http_params(get_combinations_of_params())
+base_url = 'http://trackfield.brinkster.net/More.asp'
+running = True
 while(running):
+
     if(i == len(params)-1):
         running = False
+
     print('\n========================================\n')
     url = base_url + params[i]
+
     try:
-        print('URL N°', i, '/', len(params)-1, ' : ', url)
         response = requests.get(url)
-        print(response.status_code)
-        # soup = BeautifulSoup.BeautifulSoup(response.text, 'html.parser')
-        # dir_path = os.path.dirname(os.path.realpath(__file__))
-        # txt = os.path.join(dir_path, param + '_' +  i + ".txt")
-        # file = open(txt,'w') 
-        # file.write(soup.find('table')) 
-        # file.close()
-        i += 1
-    except:
-        if tries > 2:
-            print('An error occured, tried more than 2 times, passing...')
-            i += 1
-            tries = 0
-        else:
-            print('An error occured... Retrying in ', x, 'seconds')
-            tries += 1
+    except (ConnectionError, ConnectionResetError, urllib3.exceptions.ProtocolError, requests.exceptions.ConnectionError):
+        print('Connection aborted... Trying again in {} seconds'.format(x))
         time.sleep(x)
-    
+        continue
+
+    print('Url N°', i, '/',len(params))
+    if response.status_code == 200:
+        print('Scraping...')
+        write_table_to_csv(response.text, params[i].replace('?Year=','').replace('&EventCode=','_'))  
+        i += 1
+    elif response.status_code == 404 or response.status_code == 403:
+        print('http error code 404, passing url "{}"...'.format(url))
+        i += 1
+    elif response.status_code == 500 or response.status_code == 503:
+        print('http error code 500, retrying in {} seconds...'.format(x*6))
 
 print('END.')
 
  
+#              _( }        
+#        _  <<  \
+#       `.\__/`/\\        ** Getting a new world record of most csv files created on a computer... **
+#         '--'\\  `
+#             //
+#             \)                    
