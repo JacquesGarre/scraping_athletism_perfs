@@ -44,7 +44,6 @@ def get_combinations_of_params():
     return combinations
 
 def get_http_params(combinations):
-    
     params = []
     for combination in combinations:
         http_params = '?Year=' + str(combination[0]) + '&EventCode=' + str(combination[1]) # pattern : ?Year=2019&EventCode=MA1
