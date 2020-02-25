@@ -30,7 +30,6 @@ def get_event_codes():
     return hrefs
 
 def get_combinations_of_params():
-    # ?Year=2019&EventCode=MA1&Gender=M
     params = {
         'Year': range(1891,2020),
         'Gender': ['M', 'F'], # Inutile après analyse des event codes
@@ -43,9 +42,10 @@ def get_combinations_of_params():
     return combinations
 
 def get_http_params(combinations):
+    
     params = []
     for combination in combinations:
-        http_params = '?Year=' + str(combination[0]) + '&EventCode=' + str(combination[1])
+        http_params = '?Year=' + str(combination[0]) + '&EventCode=' + str(combination[1]) # pattern : ?Year=2019&EventCode=MA1
         params.append(http_params)
     return params
 
@@ -66,8 +66,8 @@ def write_table_to_csv(html, title):
         f.writerow([row.get_text().replace('\n', ';').replace(',','')])
 
 
-i = 0
-x = 20 # délai entre les essais
+i = 0 # stopped at 4778
+timeout = 20 # délai entre les essais
 tries = 0
 params = get_http_params(get_combinations_of_params())
 base_url = 'http://trackfield.brinkster.net/More.asp'
@@ -83,8 +83,8 @@ while(running):
     try:
         response = requests.get(url)
     except (ConnectionError, ConnectionResetError, urllib3.exceptions.ProtocolError, requests.exceptions.ConnectionError):
-        print('Connection aborted... Trying again in {} seconds'.format(x))
-        time.sleep(x)
+        print('Connection aborted... Trying again in {} seconds'.format(timeout))
+        time.sleep(timeout)
         continue
 
     print('Url N°', i, '/',len(params))
@@ -96,8 +96,8 @@ while(running):
         print('http error code 404, passing url "{}"...'.format(url))
         i += 1
     elif response.status_code == 500 or response.status_code == 503:
-        print('http error code 500, retrying in {} seconds...'.format(x*6))
-        time.sleep(x*6)
+        print('http error code 500, retrying in {} seconds...'.format(timeout*6))
+        time.sleep(timeout*6)
 
 print('THE END.')
 
