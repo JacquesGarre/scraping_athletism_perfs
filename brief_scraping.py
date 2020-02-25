@@ -97,6 +97,7 @@ while(running):
         i += 1
     elif response.status_code == 500 or response.status_code == 503:
         print('http error code 500, retrying in {} seconds...'.format(x*6))
+        time.sleep(x*6)
 
 print('END.')
 
