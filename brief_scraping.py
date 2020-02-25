@@ -9,7 +9,9 @@ import csv
 
 # ===============================================================================================
                     # 25 meilleures performances de l’année 1891 à 2019 en
-                    # toutes disciplines confondues, dans un fichier Excel.
+                    # toutes disciplines confondues, dans un fichier Excel 
+                    # (ou plutôt DES fichiers Excel, ou plutôt une multitude de multiples
+                    # fichiers Excel...)
 # ===============================================================================================
 
 def get_el_by_pos(html_content, element, position):
