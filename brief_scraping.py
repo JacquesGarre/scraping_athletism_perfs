@@ -67,7 +67,7 @@ def write_table_to_csv(html, title):
         f.writerow([row.get_text().replace('\n', ';').replace(',','')])
 
 
-i = 0 # stopped at 4778
+i = 0 
 timeout = 20 # délai entre les essais
 tries = 0
 params = get_http_params(get_combinations_of_params())
@@ -88,7 +88,7 @@ while(running):
         time.sleep(timeout)
         continue
 
-    print('Url N°', i, '/',len(params))
+    print('Url N°', i, '/',len(params)-1)
     if response.status_code == 200:
         print('Scraping...')
         write_table_to_csv(response.text, params[i].replace('?Year=','').replace('&EventCode=','_'))  
